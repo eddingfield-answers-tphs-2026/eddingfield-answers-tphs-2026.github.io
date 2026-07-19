@@ -348,21 +348,21 @@
     showDamageText(x, y, '-' + Math.round(drop) + '%');
   }
 
-  // ---------- Player (2.5x — 150% larger than before) ----------
+  // ---------- Player (scaled down from before) ----------
   const player = {
     x: window.innerWidth / 2,
     y: window.innerHeight / 2,
-    size: 375,
+    size: 130,
     speed: 0.08,
     angle: 0,
     invulnerableUntil: 0
   };
 
-  // ---------- Grim Reaper (2.5x — 150% larger than before) ----------
+  // ---------- Grim Reaper (scaled down from before) ----------
   const reaper = {
     x: 50,
     y: 50,
-    size: 450,
+    size: 160,
     speed: levelSpeeds[currentLevel],
     angle: 0,
     incapacitated: false,
@@ -419,6 +419,7 @@
     const type = Math.random() < 0.5 ? 'MCQ' : 'FRQ';
     failText.textContent = `You have failed the Unit ${unit} ${type} test`;
     overlay.classList.add('show');
+    dropGrade(player.x, player.y);
   }
 
   // ---------- Game loop ----------
@@ -449,7 +450,7 @@
       reaper.x += (dx / dist) * reaper.speed;
       reaper.y += (dy / dist) * reaper.speed;
 
-      if (dist < (player.size + reaper.size) / 5 && now > player.invulnerableUntil) {
+      if (dist < (player.size + reaper.size) / 4 && now > player.invulnerableUntil) {
         triggerFail();
         player.invulnerableUntil = now + 1500;
         shakeUntil = now + 400;
@@ -474,7 +475,6 @@
           reaper.incapacitated = true;
           reaper.incapacitatedUntil = now + 5000;
           darts.splice(i, 1);
-          dropGrade(reaper.x, reaper.y);
           shakeUntil = now + 250;
           shakeMag = 6;
         }
