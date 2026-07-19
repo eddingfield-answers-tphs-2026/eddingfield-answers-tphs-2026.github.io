@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Eddingfield Google Classroom</title>
+<title>edgeingfield google classroom</title>
 <meta name="google-site-verification" content="513LddNWh0Ju_aFG5PFY9WjM7LuuUZ-vfhBucP4fMAg" />
 <style>
   html, body {
@@ -65,7 +65,6 @@
     100% { opacity: 0; transform: scale(0.5) translateY(-80px); }
   }
 
-  /* Floating damage text */
   .dmg-text {
     position: fixed;
     color: #ff3b3b;
@@ -81,7 +80,17 @@
     100% { opacity: 0; transform: translateY(-60px); }
   }
 
-  /* Fail popup - background is click-through, box is not */
+  .pass-text {
+    position: fixed;
+    color: #ffd23b;
+    font-weight: bold;
+    font-size: 20px;
+    pointer-events: none;
+    z-index: 65;
+    text-shadow: 0 0 6px rgba(0,0,0,0.6);
+    animation: dmg-float 1.2s ease-out forwards;
+  }
+
   .overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -117,11 +126,8 @@
     cursor: pointer;
     pointer-events: auto;
   }
-  .alert-box button:hover {
-    background: #eee;
-  }
+  .alert-box button:hover { background: #eee; }
 
-  /* Pause button */
   .pause-btn {
     position: fixed;
     top: 16px;
@@ -137,11 +143,8 @@
     cursor: pointer;
     box-shadow: 0 3px 8px rgba(0,0,0,0.4);
   }
-  .pause-btn:hover {
-    background-color: #444d56;
-  }
+  .pause-btn:hover { background-color: #444d56; }
 
-  /* Grade display */
   .grade-panel {
     position: fixed;
     top: 16px;
@@ -156,12 +159,23 @@
     text-align: right;
     box-shadow: 0 3px 8px rgba(0,0,0,0.4);
   }
-  .grade-panel .grade-letter {
-    font-size: 22px;
-    margin-left: 8px;
+  .grade-panel .grade-letter { font-size: 22px; margin-left: 8px; }
+
+  .passes-panel {
+    position: fixed;
+    top: 66px;
+    right: 16px;
+    z-index: 60;
+    background: rgba(0,0,0,0.6);
+    color: #ffd23b;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 14px;
+    text-align: right;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.4);
   }
 
-  /* Level buttons */
   .level-panel {
     position: fixed;
     bottom: 16px;
@@ -181,15 +195,28 @@
     opacity: 0.75;
     box-shadow: 0 3px 8px rgba(0,0,0,0.4);
   }
-  .level-btn.active {
-    opacity: 1;
-    outline: 3px solid white;
-  }
+  .level-btn.active { opacity: 1; outline: 3px solid white; }
   .level-easy { background-color: #2e7d32; }
   .level-medium { background-color: #e6a700; }
   .level-hard { background-color: #b30000; }
 
-  /* Pause overlay */
+  .shop-btn {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    z-index: 60;
+    width: 54px;
+    height: 54px;
+    font-size: 26px;
+    border: none;
+    border-radius: 50%;
+    background-color: #6a3fb5;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+  }
+  .shop-btn:hover { background-color: #8058d1; }
+
   .pause-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -205,6 +232,84 @@
     pointer-events: none;
   }
   .pause-overlay.show { display: flex; }
+
+  /* Shop modal */
+  .shop-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 90;
+    pointer-events: none;
+  }
+  .shop-overlay.show { display: flex; }
+  .shop-box {
+    background: #1e1b2e;
+    color: white;
+    padding: 24px 28px;
+    border-radius: 16px;
+    width: 420px;
+    max-width: 90vw;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    pointer-events: auto;
+  }
+  .shop-box h2 {
+    margin: 0 0 4px 0;
+    font-size: 22px;
+  }
+  .shop-box .shop-sub {
+    color: #ffd23b;
+    font-weight: bold;
+    margin-bottom: 16px;
+    font-size: 15px;
+  }
+  .shop-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: rgba(255,255,255,0.06);
+    padding: 10px 12px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+  }
+  .shop-item-info { flex: 1; }
+  .shop-item-name { font-weight: bold; font-size: 15px; }
+  .shop-item-desc { font-size: 12px; color: #cfcfe0; margin-top: 2px; }
+  .shop-item-level { font-size: 11px; color: #9d9dc0; margin-top: 2px; }
+  .shop-buy-btn {
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    background: #ffd23b;
+    color: #1e1b2e;
+    cursor: pointer;
+    min-width: 70px;
+  }
+  .shop-buy-btn:disabled {
+    background: #555;
+    color: #999;
+    cursor: not-allowed;
+  }
+  .shop-close-btn {
+    margin-top: 14px;
+    width: 100%;
+    padding: 10px;
+    font-size: 15px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    background: #24292e;
+    color: white;
+    cursor: pointer;
+  }
+  .shop-close-btn:hover { background: #444d56; }
 </style>
 </head>
 <body>
@@ -216,12 +321,15 @@
 <div class="grade-panel">
   Grade: <span id="gradePercent">100%</span><span class="grade-letter" id="gradeLetter">A+</span>
 </div>
+<div class="passes-panel">🚻 Passes: <span id="passesCount">0</span></div>
 
 <div class="level-panel">
   <button class="level-btn level-easy active" data-level="easy">Easy</button>
   <button class="level-btn level-medium" data-level="medium">Medium</button>
   <button class="level-btn level-hard" data-level="hard">Hard</button>
 </div>
+
+<button class="shop-btn" id="shopBtn" title="Shop">🛒</button>
 
 <div class="pause-overlay" id="pauseOverlay">PAUSED</div>
 
@@ -236,9 +344,19 @@
   </div>
 </div>
 
+<div class="shop-overlay" id="shopOverlay">
+  <div class="shop-box">
+    <h2>🚻 Bathroom Pass Shop</h2>
+    <div class="shop-sub">You have <span id="shopPassesCount">0</span> passes</div>
+    <div id="shopList"></div>
+    <button class="shop-close-btn" id="closeShop">Close Shop</button>
+  </div>
+</div>
+
 <script>
   // ---------- Pause state ----------
   let paused = false;
+  let wasPausedBeforeShop = false;
 
   // ---------- Screen shake ----------
   let shakeUntil = 0;
@@ -260,10 +378,18 @@
     for (let i = 0; i < 4; i++) setTimeout(createSparkle, i * 150);
   }, 3000);
 
-  // ---------- Floating damage text ----------
   function showDamageText(x, y, text) {
     const el = document.createElement('div');
     el.className = 'dmg-text';
+    el.textContent = text;
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 1200);
+  }
+  function showPassText(x, y, text) {
+    const el = document.createElement('div');
+    el.className = 'pass-text';
     el.textContent = text;
     el.style.left = x + 'px';
     el.style.top = y + 'px';
@@ -342,23 +468,110 @@
   }
 
   function dropGrade(x, y) {
-    const drop = 5 + Math.random() * 5; // random 5-10
+    const [minD, maxD] = getGradeDropRange();
+    let drop = minD + Math.random() * (maxD - minD);
+    if (Math.random() < getLuckyChance()) drop = drop / 2;
     gradePercent = Math.max(0, gradePercent - drop);
     updateGradeDisplay();
     showDamageText(x, y, '-' + Math.round(drop) + '%');
   }
 
-  // ---------- Player (scaled down from before) ----------
+  // ---------- Bathroom passes / shop ----------
+  let passes = 0;
+  const passesCountEl = document.getElementById('passesCount');
+  const shopPassesCountEl = document.getElementById('shopPassesCount');
+  function updatePassesDisplay() {
+    passesCountEl.textContent = passes;
+    shopPassesCountEl.textContent = passes;
+  }
+
+  const upgrades = {
+    vest: 0, sharpDarts: 0, bigDarts: 0, sneakers: 0,
+    scytheBreak: 0, padding: 0, doubleShot: 0, luckyCharm: 0
+  };
+
+  const shopItems = [
+    { id: 'vest', name: 'Reinforced Vest', icon: '🦺', desc: 'Reduces grade drop when hit', baseCost: 3, maxLevel: 4, growth: 1.6 },
+    { id: 'sharpDarts', name: 'Sharp Darts', icon: '🎯', desc: 'Darts fly faster', baseCost: 2, maxLevel: 5, growth: 1.5 },
+    { id: 'bigDarts', name: 'Big Darts', icon: '💥', desc: 'Larger hit radius on darts', baseCost: 3, maxLevel: 3, growth: 1.7 },
+    { id: 'sneakers', name: 'Swift Sneakers', icon: '👟', desc: 'Move toward cursor faster', baseCost: 2, maxLevel: 5, growth: 1.5 },
+    { id: 'scytheBreak', name: 'Heavy Scythe Break', icon: '⏳', desc: 'Reaper stays down longer', baseCost: 3, maxLevel: 4, growth: 1.6 },
+    { id: 'padding', name: 'Extra Padding', icon: '🛡️', desc: 'Longer spawn protection', baseCost: 2, maxLevel: 3, growth: 1.6 },
+    { id: 'doubleShot', name: 'Double Shot', icon: '🎯🎯', desc: 'Fire two darts per click', baseCost: 6, maxLevel: 1, growth: 1 },
+    { id: 'luckyCharm', name: 'Lucky Charm', icon: '🍀', desc: 'Chance to halve grade drop', baseCost: 4, maxLevel: 3, growth: 1.6 }
+  ];
+
+  function costForItem(item) {
+    return Math.round(item.baseCost * Math.pow(item.growth, upgrades[item.id]));
+  }
+
+  function getDartSpeed() { return 9 + upgrades.sharpDarts * 2; }
+  function getDartHitBonus() { return upgrades.bigDarts * 8; }
+  function getPlayerSpeed() { return 0.08 + upgrades.sneakers * 0.01; }
+  function getIncapDuration() { return 5000 + upgrades.scytheBreak * 1000; }
+  function getInvulnDuration() { return 3000 + upgrades.padding * 500; } // 3s base spawn protection
+  function getGradeDropRange() {
+    const reduction = upgrades.vest;
+    const min = Math.max(1, 5 - reduction);
+    const max = Math.max(min + 1, 10 - reduction);
+    return [min, max];
+  }
+  function getLuckyChance() { return upgrades.luckyCharm * 0.1; }
+
+  const shopList = document.getElementById('shopList');
+  function renderShop() {
+    shopList.innerHTML = '';
+    shopItems.forEach(item => {
+      const level = upgrades[item.id];
+      const maxed = level >= item.maxLevel;
+      const cost = costForItem(item);
+      const row = document.createElement('div');
+      row.className = 'shop-item';
+      row.innerHTML = `
+        <div class="shop-item-info">
+          <div class="shop-item-name">${item.icon} ${item.name}</div>
+          <div class="shop-item-desc">${item.desc}</div>
+          <div class="shop-item-level">Level ${level}/${item.maxLevel}</div>
+        </div>
+        <button class="shop-buy-btn" ${maxed || passes < cost ? 'disabled' : ''}>
+          ${maxed ? 'MAXED' : '🚻 ' + cost}
+        </button>
+      `;
+      row.querySelector('button').addEventListener('click', () => {
+        if (maxed || passes < cost) return;
+        passes -= cost;
+        upgrades[item.id]++;
+        updatePassesDisplay();
+        renderShop();
+      });
+      shopList.appendChild(row);
+    });
+  }
+
+  const shopBtn = document.getElementById('shopBtn');
+  const shopOverlay = document.getElementById('shopOverlay');
+  const closeShop = document.getElementById('closeShop');
+  shopBtn.addEventListener('click', () => {
+    wasPausedBeforeShop = paused;
+    paused = true;
+    renderShop();
+    shopOverlay.classList.add('show');
+  });
+  closeShop.addEventListener('click', () => {
+    shopOverlay.classList.remove('show');
+    paused = wasPausedBeforeShop;
+  });
+
+  // ---------- Player ----------
   const player = {
     x: window.innerWidth / 2,
     y: window.innerHeight / 2,
     size: 130,
-    speed: 0.08,
     angle: 0,
-    invulnerableUntil: 0
+    invulnerableUntil: performance.now() + 3000 // starts protected too
   };
 
-  // ---------- Grim Reaper (scaled down from before) ----------
+  // ---------- Grim Reaper ----------
   const reaper = {
     x: 50,
     y: 50,
@@ -369,27 +582,30 @@
     incapacitatedUntil: 0
   };
 
-  // ---------- Player trail ----------
   const trail = [];
-
-  // ---------- Darts ----------
   const darts = [];
-  const DART_SPEED = 9;
+
+  function spawnDart(targetX, targetY) {
+    const dx = targetX - player.x;
+    const dy = targetY - player.y;
+    const baseAngle = Math.atan2(dy, dx);
+    const speed = getDartSpeed();
+    if (upgrades.doubleShot >= 1) {
+      const spread = 0.14;
+      [-spread / 2, spread / 2].forEach(off => {
+        const a = baseAngle + off;
+        darts.push({ x: player.x, y: player.y, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed });
+      });
+    } else {
+      darts.push({ x: player.x, y: player.y, vx: Math.cos(baseAngle) * speed, vy: Math.sin(baseAngle) * speed });
+    }
+  }
 
   canvas.addEventListener('click', (e) => {
     if (paused) return;
-    const dx = e.clientX - player.x;
-    const dy = e.clientY - player.y;
-    const dist = Math.hypot(dx, dy) || 1;
-    darts.push({
-      x: player.x,
-      y: player.y,
-      vx: (dx / dist) * DART_SPEED,
-      vy: (dy / dist) * DART_SPEED
-    });
+    spawnDart(e.clientX, e.clientY);
   });
 
-  // ---------- Blood particles ----------
   const particles = [];
   function spawnBlood(x, y) {
     for (let i = 0; i < 30; i++) {
@@ -406,7 +622,6 @@
     }
   }
 
-  // ---------- Fail popup ----------
   const overlay = document.getElementById('failOverlay');
   const failText = document.getElementById('failText');
   document.getElementById('closeFail').addEventListener('click', () => {
@@ -422,15 +637,14 @@
     dropGrade(player.x, player.y);
   }
 
-  // ---------- Game loop ----------
   function update() {
     if (paused) return;
 
-    player.x += (mouse.x - player.x) * player.speed;
-    player.y += (mouse.y - player.y) * player.speed;
+    const speed = getPlayerSpeed();
+    player.x += (mouse.x - player.x) * speed;
+    player.y += (mouse.y - player.y) * speed;
     player.angle = Math.atan2(mouse.y - player.y, mouse.x - player.x);
 
-    // Update trail
     trail.push({ x: player.x, y: player.y, life: 20 });
     for (let i = trail.length - 1; i >= 0; i--) {
       trail[i].life--;
@@ -439,9 +653,7 @@
 
     const now = performance.now();
     if (reaper.incapacitated) {
-      if (now > reaper.incapacitatedUntil) {
-        reaper.incapacitated = false;
-      }
+      if (now > reaper.incapacitatedUntil) reaper.incapacitated = false;
     } else {
       const dx = player.x - reaper.x;
       const dy = player.y - reaper.y;
@@ -452,7 +664,7 @@
 
       if (dist < (player.size + reaper.size) / 4 && now > player.invulnerableUntil) {
         triggerFail();
-        player.invulnerableUntil = now + 1500;
+        player.invulnerableUntil = now + getInvulnDuration();
         shakeUntil = now + 400;
         shakeMag = 10;
       }
@@ -470,13 +682,17 @@
 
       if (!reaper.incapacitated) {
         const dist = Math.hypot(d.x - reaper.x, d.y - reaper.y);
-        if (dist < reaper.size / 2) {
+        if (dist < reaper.size / 2 + getDartHitBonus()) {
           spawnBlood(reaper.x, reaper.y);
           reaper.incapacitated = true;
-          reaper.incapacitatedUntil = now + 5000;
+          reaper.incapacitatedUntil = now + getIncapDuration();
           darts.splice(i, 1);
           shakeUntil = now + 250;
           shakeMag = 6;
+
+          passes += 1;
+          updatePassesDisplay();
+          showPassText(reaper.x, reaper.y - 20, '+1 🚻');
         }
       }
     }
@@ -493,18 +709,13 @@
 
   function draw() {
     ctx.save();
-
-    // Screen shake
     const now = performance.now();
     if (now < shakeUntil) {
-      const dx = (Math.random() - 0.5) * shakeMag;
-      const dy = (Math.random() - 0.5) * shakeMag;
-      ctx.translate(dx, dy);
+      ctx.translate((Math.random() - 0.5) * shakeMag, (Math.random() - 0.5) * shakeMag);
     }
 
     ctx.clearRect(-20, -20, canvas.width + 40, canvas.height + 40);
 
-    // Player trail
     for (const t of trail) {
       ctx.globalAlpha = (t.life / 20) * 0.15;
       ctx.fillStyle = '#ffffff';
@@ -514,7 +725,6 @@
     }
     ctx.globalAlpha = 1;
 
-    // Reaper glow when incapacitated
     if (reaper.incapacitated) {
       const pulse = 0.4 + 0.3 * Math.sin(now / 120);
       ctx.save();
@@ -530,9 +740,7 @@
       ctx.save();
       ctx.translate(reaper.x, reaper.y);
       ctx.rotate(reaper.angle);
-      if (reaper.incapacitated) {
-        ctx.globalAlpha = 0.35;
-      }
+      if (reaper.incapacitated) ctx.globalAlpha = 0.35;
       ctx.drawImage(reaperImg, -reaper.size / 2, -reaper.size / 2, reaper.size, reaper.size);
       ctx.restore();
       ctx.globalAlpha = 1;
