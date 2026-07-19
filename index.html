@@ -1,100 +1,368 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>My GitHub Site</title>
-  <meta name="google-site-verification" content="513LddNWh0Ju_aFG5PFY9WjM7LuuUZ-vfhBucP4fMAg" />
-  <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      font-family: sans-serif;
-      background-image: url('background.png');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      position: relative;
-      overflow: hidden;
-    }
-    .btn {
-      position: absolute;
-      bottom: 10%;
-      left: 50%;
-      transform: translateX(-50%);
-      display: inline-block;
-      padding: 22px 44px;
-      font-size: 26px;
-      font-weight: bold;
-      color: white;
-      background-color: #24292e;
-      text-decoration: none;
-      border-radius: 12px;
-      transition: background-color 0.2s ease, transform 0.2s ease;
-      z-index: 10;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-    }
-    .btn:hover {
-      background-color: #444d56;
-      transform: translateX(-50%) scale(1.05);
-    }
+<meta charset="UTF-8">
+<title>My GitHub Site</title>
+<meta name="google-site-verification" content="513LddNWh0Ju_aFG5PFY9WjM7LuuUZ-vfhBucP4fMAg" />
+<style>
+  html, body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    font-family: sans-serif;
+  }
+  body {
+    background-image: url('background.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+  }
+  canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 5;
+    cursor: crosshair;
+  }
+  .btn {
+    position: absolute;
+    bottom: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: inline-block;
+    padding: 22px 44px;
+    font-size: 26px;
+    font-weight: bold;
+    color: white;
+    background-color: #24292e;
+    text-decoration: none;
+    border-radius: 12px;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    z-index: 20;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  }
+  .btn:hover {
+    background-color: #444d56;
+    transform: translateX(-50%) scale(1.05);
+  }
 
-    /* Sparkle effect */
-    .sparkle {
-      position: absolute;
-      width: 8px;
-      height: 8px;
-      background: white;
-      border-radius: 50%;
-      pointer-events: none;
-      opacity: 0;
-      box-shadow: 0 0 8px 2px rgba(255,255,255,0.8);
-      animation: sparkle-anim 2s ease-out forwards;
-    }
+  .sparkle {
+    position: fixed;
+    width: 8px;
+    height: 8px;
+    background: white;
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0;
+    box-shadow: 0 0 8px 2px rgba(255,255,255,0.8);
+    animation: sparkle-anim 2s ease-out forwards;
+    z-index: 6;
+  }
+  @keyframes sparkle-anim {
+    0% { opacity: 0; transform: scale(0) translateY(0); }
+    20% { opacity: 1; transform: scale(1) translateY(-10px); }
+    100% { opacity: 0; transform: scale(0.5) translateY(-80px); }
+  }
 
-    @keyframes sparkle-anim {
-      0% {
-        opacity: 0;
-        transform: scale(0) translateY(0);
-      }
-      20% {
-        opacity: 1;
-        transform: scale(1) translateY(-10px);
-      }
-      100% {
-        opacity: 0;
-        transform: scale(0.5) translateY(-80px);
-      }
-    }
-  </style>
+  /* Fail popup */
+  .overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+  }
+  .overlay.show { display: flex; }
+  .alert-box {
+    background: #b30000;
+    color: white;
+    padding: 30px 40px;
+    border-radius: 14px;
+    text-align: center;
+    max-width: 360px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    font-size: 20px;
+    font-weight: bold;
+  }
+  .alert-box button {
+    margin-top: 18px;
+    padding: 10px 22px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    background: white;
+    color: #b30000;
+    cursor: pointer;
+  }
+  .alert-box button:hover {
+    background: #eee;
+  }
+</style>
 </head>
 <body>
-  <a class="btn" href="https://github.com/eddingfield-answers-tphs-2026/RYANEDDINGFIELD-TPHS-TORREYPINESHIGHSCHOOL-ANSWERS-2026" target="_blank">
-    View Answers
-  </a>
 
-  <script>
-    function createSparkle() {
-      const sparkle = document.createElement('div');
-      sparkle.className = 'sparkle';
+<canvas id="game"></canvas>
 
-      // Keep sparkles in top 70% of screen so they never overlap the button area
-      const x = Math.random() * window.innerWidth;
-      const y = Math.random() * (window.innerHeight * 0.7);
+<a class="btn" href="https://github.com/eddingfield-answers-tphs-2026/RYANEDDINGFIELD-TPHS-TORREYPINESHIGHSCHOOL-ANSWERS-2026" target="_blank">
+  View Answers
+</a>
 
-      sparkle.style.left = x + 'px';
-      sparkle.style.top = y + 'px';
+<div class="overlay" id="failOverlay">
+  <div class="alert-box">
+    <div id="failText"></div>
+    <button id="closeFail">Close</button>
+  </div>
+</div>
 
-      document.body.appendChild(sparkle);
+<script>
+  // ---------- Sparkles ----------
+  function createSparkle() {
+    const sparkle = document.createElement('div');
+    sparkle.className = 'sparkle';
+    const x = Math.random() * window.innerWidth;
+    const y = Math.random() * window.innerHeight;
+    sparkle.style.left = x + 'px';
+    sparkle.style.top = y + 'px';
+    document.body.appendChild(sparkle);
+    setTimeout(() => sparkle.remove(), 2000);
+  }
+  setInterval(() => {
+    for (let i = 0; i < 4; i++) setTimeout(createSparkle, i * 150);
+  }, 3000);
 
-      setTimeout(() => sparkle.remove(), 2000);
+  // ---------- Canvas setup ----------
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // ---------- Images ----------
+  const playerImg = new Image();
+  playerImg.src = 'player.png';
+  const reaperImg = new Image();
+  reaperImg.src = 'grimreaper.png';
+
+  // ---------- Mouse tracking ----------
+  const mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+  window.addEventListener('mousemove', (e) => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+  });
+
+  // ---------- Player ----------
+  const player = {
+    x: window.innerWidth / 2,
+    y: window.innerHeight / 2,
+    size: 50,
+    speed: 0.08,
+    angle: 0,
+    invulnerableUntil: 0
+  };
+
+  // ---------- Grim Reaper ----------
+  function spawnReaper() {
+    // spawn at random edge, away from player
+    const edge = Math.floor(Math.random() * 4);
+    let x, y;
+    if (edge === 0) { x = 0; y = Math.random() * window.innerHeight; }
+    else if (edge === 1) { x = window.innerWidth; y = Math.random() * window.innerHeight; }
+    else if (edge === 2) { x = Math.random() * window.innerWidth; y = 0; }
+    else { x = Math.random() * window.innerWidth; y = window.innerHeight; }
+    return x, y;
+  }
+
+  const reaper = {
+    x: 50,
+    y: 50,
+    size: 60,
+    speed: 1.8,
+    angle: 0,
+    incapacitated: false,
+    incapacitatedUntil: 0
+  };
+
+  // ---------- Darts ----------
+  const darts = [];
+  const DART_SPEED = 9;
+  const DART_SIZE = 6;
+
+  canvas.addEventListener('click', (e) => {
+    const dx = e.clientX - player.x;
+    const dy = e.clientY - player.y;
+    const dist = Math.hypot(dx, dy) || 1;
+    darts.push({
+      x: player.x,
+      y: player.y,
+      vx: (dx / dist) * DART_SPEED,
+      vy: (dy / dist) * DART_SPEED
+    });
+  });
+
+  // ---------- Blood particles ----------
+  const particles = [];
+  function spawnBlood(x, y) {
+    for (let i = 0; i < 24; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 2 + Math.random() * 4;
+      particles.push({
+        x, y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 40 + Math.random() * 20,
+        maxLife: 60,
+        size: 3 + Math.random() * 4
+      });
+    }
+  }
+
+  // ---------- Fail popup ----------
+  const overlay = document.getElementById('failOverlay');
+  const failText = document.getElementById('failText');
+  document.getElementById('closeFail').addEventListener('click', () => {
+    overlay.classList.remove('show');
+  });
+
+  function triggerFail() {
+    if (overlay.classList.contains('show')) return; // avoid stacking
+    const unit = Math.floor(Math.random() * 11) + 1;
+    const type = Math.random() < 0.5 ? 'MCQ' : 'FRQ';
+    failText.textContent = `You have failed the Unit ${unit} ${type} test`;
+    overlay.classList.add('show');
+  }
+
+  // ---------- Game loop ----------
+  function update() {
+    // Player follows mouse smoothly
+    player.x += (mouse.x - player.x) * player.speed;
+    player.y += (mouse.y - player.y) * player.speed;
+    player.angle = Math.atan2(mouse.y - player.y, mouse.x - player.x);
+
+    // Reaper chases player (if not incapacitated)
+    const now = performance.now();
+    if (reaper.incapacitated) {
+      if (now > reaper.incapacitatedUntil) {
+        reaper.incapacitated = false;
+      }
+    } else {
+      const dx = player.x - reaper.x;
+      const dy = player.y - reaper.y;
+      const dist = Math.hypot(dx, dy) || 1;
+      reaper.angle = Math.atan2(dy, dx);
+      reaper.x += (dx / dist) * reaper.speed;
+      reaper.y += (dy / dist) * reaper.speed;
+
+      // Collision with player
+      if (dist < (player.size + reaper.size) / 2.5 && now > player.invulnerableUntil) {
+        triggerFail();
+        player.invulnerableUntil = now + 1500;
+      }
     }
 
-    // Fire a small burst of sparkles every 3 seconds
-    setInterval(() => {
-      for (let i = 0; i < 4; i++) {
-        setTimeout(createSparkle, i * 150);
+    // Update darts
+    for (let i = darts.length - 1; i >= 0; i--) {
+      const d = darts[i];
+      d.x += d.vx;
+      d.y += d.vy;
+
+      // Off screen removal
+      if (d.x < -20 || d.x > canvas.width + 20 || d.y < -20 || d.y > canvas.height + 20) {
+        darts.splice(i, 1);
+        continue;
       }
-    }, 3000);
-  </script>
+
+      // Hit reaper?
+      if (!reaper.incapacitated) {
+        const dist = Math.hypot(d.x - reaper.x, d.y - reaper.y);
+        if (dist < reaper.size / 2) {
+          spawnBlood(reaper.x, reaper.y);
+          reaper.incapacitated = true;
+          reaper.incapacitatedUntil = now + 5000;
+          darts.splice(i, 1);
+        }
+      }
+    }
+
+    // Update particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.15; // gravity
+      p.life--;
+      if (p.life <= 0) particles.splice(i, 1);
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw reaper (if loaded)
+    if (reaperImg.complete) {
+      ctx.save();
+      ctx.translate(reaper.x, reaper.y);
+      ctx.rotate(reaper.angle);
+      if (reaper.incapacitated) {
+        ctx.globalAlpha = 0.35;
+      }
+      ctx.drawImage(reaperImg, -reaper.size / 2, -reaper.size / 2, reaper.size, reaper.size);
+      ctx.restore();
+      ctx.globalAlpha = 1;
+    }
+
+    // Draw blood particles
+    for (const p of particles) {
+      ctx.globalAlpha = Math.max(p.life / p.maxLife, 0);
+      ctx.fillStyle = '#a80000';
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // Draw darts
+    ctx.fillStyle = '#e00000';
+    for (const d of darts) {
+      ctx.save();
+      ctx.translate(d.x, d.y);
+      ctx.rotate(Math.atan2(d.vy, d.vx));
+      ctx.beginPath();
+      ctx.moveTo(8, 0);
+      ctx.lineTo(-6, 4);
+      ctx.lineTo(-6, -4);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // Draw player (flash while invulnerable)
+    if (playerImg.complete) {
+      const now = performance.now();
+      const flashing = now < player.invulnerableUntil && Math.floor(now / 100) % 2 === 0;
+      ctx.save();
+      ctx.globalAlpha = flashing ? 0.4 : 1;
+      ctx.translate(player.x, player.y);
+      ctx.rotate(player.angle);
+      ctx.drawImage(playerImg, -player.size / 2, -player.size / 2, player.size, player.size);
+      ctx.restore();
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  function loop() {
+    update();
+    draw();
+    requestAnimationFrame(loop);
+  }
+  loop();
+</script>
+
 </body>
 </html>
