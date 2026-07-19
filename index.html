@@ -14,6 +14,7 @@
       background-position: center;
       background-repeat: no-repeat;
       position: relative;
+      overflow: hidden;
     }
     .btn {
       position: absolute;
@@ -21,16 +22,48 @@
       left: 50%;
       transform: translateX(-50%);
       display: inline-block;
-      padding: 14px 28px;
-      font-size: 18px;
+      padding: 22px 44px;
+      font-size: 26px;
+      font-weight: bold;
       color: white;
       background-color: #24292e;
       text-decoration: none;
-      border-radius: 8px;
-      transition: background-color 0.2s ease;
+      border-radius: 12px;
+      transition: background-color 0.2s ease, transform 0.2s ease;
+      z-index: 10;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
     }
     .btn:hover {
       background-color: #444d56;
+      transform: translateX(-50%) scale(1.05);
+    }
+
+    /* Sparkle effect */
+    .sparkle {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: white;
+      border-radius: 50%;
+      pointer-events: none;
+      opacity: 0;
+      box-shadow: 0 0 8px 2px rgba(255,255,255,0.8);
+      animation: sparkle-anim 2s ease-out forwards;
+    }
+
+    @keyframes sparkle-anim {
+      0% {
+        opacity: 0;
+        transform: scale(0) translateY(0);
+      }
+      20% {
+        opacity: 1;
+        transform: scale(1) translateY(-10px);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(0.5) translateY(-80px);
+      }
     }
   </style>
 </head>
@@ -38,5 +71,30 @@
   <a class="btn" href="https://github.com/eddingfield-answers-tphs-2026/RYANEDDINGFIELD-TPHS-TORREYPINESHIGHSCHOOL-ANSWERS-2026" target="_blank">
     View Answers
   </a>
+
+  <script>
+    function createSparkle() {
+      const sparkle = document.createElement('div');
+      sparkle.className = 'sparkle';
+
+      // Keep sparkles in top 70% of screen so they never overlap the button area
+      const x = Math.random() * window.innerWidth;
+      const y = Math.random() * (window.innerHeight * 0.7);
+
+      sparkle.style.left = x + 'px';
+      sparkle.style.top = y + 'px';
+
+      document.body.appendChild(sparkle);
+
+      setTimeout(() => sparkle.remove(), 2000);
+    }
+
+    // Fire a small burst of sparkles every 3 seconds
+    setInterval(() => {
+      for (let i = 0; i < 4; i++) {
+        setTimeout(createSparkle, i * 150);
+      }
+    }, 3000);
+  </script>
 </body>
 </html>
