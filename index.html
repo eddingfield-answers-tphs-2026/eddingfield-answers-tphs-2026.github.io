@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>My GitHub Site</title>
+<title>Eddingfield Google Classroom</title>
 <meta name="google-site-verification" content="513LddNWh0Ju_aFG5PFY9WjM7LuuUZ-vfhBucP4fMAg" />
 <style>
   html, body {
@@ -39,7 +39,7 @@
     text-decoration: none;
     border-radius: 12px;
     transition: background-color 0.2s ease, transform 0.2s ease;
-    z-index: 60;
+    z-index: 80;
     box-shadow: 0 4px 12px rgba(0,0,0,0.4);
   }
   .btn:hover {
@@ -65,7 +65,23 @@
     100% { opacity: 0; transform: scale(0.5) translateY(-80px); }
   }
 
-  /* Fail popup */
+  /* Floating damage text */
+  .dmg-text {
+    position: fixed;
+    color: #ff3b3b;
+    font-weight: bold;
+    font-size: 22px;
+    pointer-events: none;
+    z-index: 65;
+    text-shadow: 0 0 6px rgba(0,0,0,0.6);
+    animation: dmg-float 1.2s ease-out forwards;
+  }
+  @keyframes dmg-float {
+    0% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-60px); }
+  }
+
+  /* Fail popup - background is click-through, box is not */
   .overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -74,6 +90,7 @@
     align-items: center;
     justify-content: center;
     z-index: 70;
+    pointer-events: none;
   }
   .overlay.show { display: flex; }
   .alert-box {
@@ -86,6 +103,7 @@
     box-shadow: 0 8px 24px rgba(0,0,0,0.5);
     font-size: 20px;
     font-weight: bold;
+    pointer-events: auto;
   }
   .alert-box button {
     margin-top: 18px;
@@ -97,6 +115,7 @@
     background: white;
     color: #b30000;
     cursor: pointer;
+    pointer-events: auto;
   }
   .alert-box button:hover {
     background: #eee;
@@ -183,7 +202,7 @@
     font-size: 42px;
     font-weight: bold;
     letter-spacing: 2px;
-    pointer-events: none; /* never blocks clicks to buttons above it */
+    pointer-events: none;
   }
   .pause-overlay.show { display: flex; }
 </style>
@@ -218,8 +237,12 @@
 </div>
 
 <script>
-  // ---------- Pause state (declared early so sparkle loop can see it) ----------
+  // ---------- Pause state ----------
   let paused = false;
+
+  // ---------- Screen shake ----------
+  let shakeUntil = 0;
+  let shakeMag = 0;
 
   // ---------- Sparkles ----------
   function createSparkle() {
@@ -236,6 +259,17 @@
     if (paused) return;
     for (let i = 0; i < 4; i++) setTimeout(createSparkle, i * 150);
   }, 3000);
+
+  // ---------- Floating damage text ----------
+  function showDamageText(x, y, text) {
+    const el = document.createElement('div');
+    el.className = 'dmg-text';
+    el.textContent = text;
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 1200);
+  }
 
   // ---------- Canvas setup ----------
   const canvas = document.getElementById('game');
@@ -307,32 +341,36 @@
     gradeLetterEl.textContent = letterFromPercent(gradePercent);
   }
 
-  function dropGrade() {
-    const drop = 5 + Math.random() * 5; // random 5-10%
+  function dropGrade(x, y) {
+    const drop = 5 + Math.random() * 5; // random 5-10
     gradePercent = Math.max(0, gradePercent - drop);
     updateGradeDisplay();
+    showDamageText(x, y, '-' + Math.round(drop) + '%');
   }
 
-  // ---------- Player (scaled 3x) ----------
+  // ---------- Player (2.5x — 150% larger than before) ----------
   const player = {
     x: window.innerWidth / 2,
     y: window.innerHeight / 2,
-    size: 150,
+    size: 375,
     speed: 0.08,
     angle: 0,
     invulnerableUntil: 0
   };
 
-  // ---------- Grim Reaper (scaled 3x) ----------
+  // ---------- Grim Reaper (2.5x — 150% larger than before) ----------
   const reaper = {
     x: 50,
     y: 50,
-    size: 180,
+    size: 450,
     speed: levelSpeeds[currentLevel],
     angle: 0,
     incapacitated: false,
     incapacitatedUntil: 0
   };
+
+  // ---------- Player trail ----------
+  const trail = [];
 
   // ---------- Darts ----------
   const darts = [];
@@ -354,9 +392,9 @@
   // ---------- Blood particles ----------
   const particles = [];
   function spawnBlood(x, y) {
-    for (let i = 0; i < 24; i++) {
+    for (let i = 0; i < 30; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const speed = 2 + Math.random() * 4;
+      const speed = 2 + Math.random() * 5;
       particles.push({
         x, y,
         vx: Math.cos(angle) * speed,
@@ -391,6 +429,13 @@
     player.y += (mouse.y - player.y) * player.speed;
     player.angle = Math.atan2(mouse.y - player.y, mouse.x - player.x);
 
+    // Update trail
+    trail.push({ x: player.x, y: player.y, life: 20 });
+    for (let i = trail.length - 1; i >= 0; i--) {
+      trail[i].life--;
+      if (trail[i].life <= 0) trail.splice(i, 1);
+    }
+
     const now = performance.now();
     if (reaper.incapacitated) {
       if (now > reaper.incapacitatedUntil) {
@@ -404,9 +449,11 @@
       reaper.x += (dx / dist) * reaper.speed;
       reaper.y += (dy / dist) * reaper.speed;
 
-      if (dist < (player.size + reaper.size) / 4 && now > player.invulnerableUntil) {
+      if (dist < (player.size + reaper.size) / 5 && now > player.invulnerableUntil) {
         triggerFail();
         player.invulnerableUntil = now + 1500;
+        shakeUntil = now + 400;
+        shakeMag = 10;
       }
     }
 
@@ -427,7 +474,9 @@
           reaper.incapacitated = true;
           reaper.incapacitatedUntil = now + 5000;
           darts.splice(i, 1);
-          dropGrade();
+          dropGrade(reaper.x, reaper.y);
+          shakeUntil = now + 250;
+          shakeMag = 6;
         }
       }
     }
@@ -443,7 +492,39 @@
   }
 
   function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+
+    // Screen shake
+    const now = performance.now();
+    if (now < shakeUntil) {
+      const dx = (Math.random() - 0.5) * shakeMag;
+      const dy = (Math.random() - 0.5) * shakeMag;
+      ctx.translate(dx, dy);
+    }
+
+    ctx.clearRect(-20, -20, canvas.width + 40, canvas.height + 40);
+
+    // Player trail
+    for (const t of trail) {
+      ctx.globalAlpha = (t.life / 20) * 0.15;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(t.x, t.y, player.size / 5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // Reaper glow when incapacitated
+    if (reaper.incapacitated) {
+      const pulse = 0.4 + 0.3 * Math.sin(now / 120);
+      ctx.save();
+      ctx.globalAlpha = pulse * 0.5;
+      ctx.fillStyle = '#ff0000';
+      ctx.beginPath();
+      ctx.arc(reaper.x, reaper.y, reaper.size / 1.6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
 
     if (reaperImg.complete) {
       ctx.save();
@@ -481,7 +562,6 @@
     }
 
     if (playerImg.complete) {
-      const now = performance.now();
       const flashing = now < player.invulnerableUntil && Math.floor(now / 100) % 2 === 0;
       ctx.save();
       ctx.globalAlpha = flashing ? 0.4 : 1;
@@ -491,6 +571,8 @@
       ctx.restore();
       ctx.globalAlpha = 1;
     }
+
+    ctx.restore();
   }
 
   function loop() {
