@@ -39,7 +39,7 @@
     text-decoration: none;
     border-radius: 12px;
     transition: background-color 0.2s ease, transform 0.2s ease;
-    z-index: 20;
+    z-index: 60;
     box-shadow: 0 4px 12px rgba(0,0,0,0.4);
   }
   .btn:hover {
@@ -73,7 +73,7 @@
     display: none;
     align-items: center;
     justify-content: center;
-    z-index: 50;
+    z-index: 70;
   }
   .overlay.show { display: flex; }
   .alert-box {
@@ -107,7 +107,7 @@
     position: fixed;
     top: 16px;
     left: 16px;
-    z-index: 30;
+    z-index: 60;
     padding: 10px 18px;
     font-size: 16px;
     font-weight: bold;
@@ -122,12 +122,32 @@
     background-color: #444d56;
   }
 
+  /* Grade display */
+  .grade-panel {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 60;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 16px;
+    text-align: right;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+  }
+  .grade-panel .grade-letter {
+    font-size: 22px;
+    margin-left: 8px;
+  }
+
   /* Level buttons */
   .level-panel {
     position: fixed;
     bottom: 16px;
     left: 16px;
-    z-index: 30;
+    z-index: 60;
     display: flex;
     gap: 8px;
   }
@@ -163,6 +183,7 @@
     font-size: 42px;
     font-weight: bold;
     letter-spacing: 2px;
+    pointer-events: none; /* never blocks clicks to buttons above it */
   }
   .pause-overlay.show { display: flex; }
 </style>
@@ -172,6 +193,10 @@
 <canvas id="game"></canvas>
 
 <button class="pause-btn" id="pauseBtn">Pause</button>
+
+<div class="grade-panel">
+  Grade: <span id="gradePercent">100%</span><span class="grade-letter" id="gradeLetter">A+</span>
+</div>
 
 <div class="level-panel">
   <button class="level-btn level-easy active" data-level="easy">Easy</button>
@@ -193,6 +218,9 @@
 </div>
 
 <script>
+  // ---------- Pause state (declared early so sparkle loop can see it) ----------
+  let paused = false;
+
   // ---------- Sparkles ----------
   function createSparkle() {
     const sparkle = document.createElement('div');
@@ -232,8 +260,7 @@
     mouse.y = e.clientY;
   });
 
-  // ---------- Pause state ----------
-  let paused = false;
+  // ---------- Pause button ----------
   const pauseBtn = document.getElementById('pauseBtn');
   const pauseOverlay = document.getElementById('pauseOverlay');
   pauseBtn.addEventListener('click', () => {
@@ -253,6 +280,38 @@
       btn.classList.add('active');
     });
   });
+
+  // ---------- Grade state ----------
+  let gradePercent = 100;
+  const gradePercentEl = document.getElementById('gradePercent');
+  const gradeLetterEl = document.getElementById('gradeLetter');
+
+  function letterFromPercent(pct) {
+    if (pct >= 97) return 'A+';
+    if (pct >= 93) return 'A';
+    if (pct >= 90) return 'A-';
+    if (pct >= 87) return 'B+';
+    if (pct >= 83) return 'B';
+    if (pct >= 80) return 'B-';
+    if (pct >= 77) return 'C+';
+    if (pct >= 73) return 'C';
+    if (pct >= 70) return 'C-';
+    if (pct >= 67) return 'D+';
+    if (pct >= 63) return 'D';
+    if (pct >= 60) return 'D-';
+    return 'F';
+  }
+
+  function updateGradeDisplay() {
+    gradePercentEl.textContent = Math.round(gradePercent) + '%';
+    gradeLetterEl.textContent = letterFromPercent(gradePercent);
+  }
+
+  function dropGrade() {
+    const drop = 5 + Math.random() * 5; // random 5-10%
+    gradePercent = Math.max(0, gradePercent - drop);
+    updateGradeDisplay();
+  }
 
   // ---------- Player (scaled 3x) ----------
   const player = {
@@ -368,6 +427,7 @@
           reaper.incapacitated = true;
           reaper.incapacitatedUntil = now + 5000;
           darts.splice(i, 1);
+          dropGrade();
         }
       }
     }
